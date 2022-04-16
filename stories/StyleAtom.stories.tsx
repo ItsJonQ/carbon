@@ -1,7 +1,8 @@
 import React from 'react';
 import { Meta } from '@storybook/react';
-import { atom, styled } from '../src/atom';
-import { createVars } from '../src/atom/createVars';
+import { atom } from '../src/atom';
+import { styled } from '../src/styled';
+import { createVars } from '../src/createVars';
 
 const tokens = createVars({
   white: 'white',
@@ -65,7 +66,7 @@ const controlAtom = atom(
   },
   {
     variants: {
-      size: {
+      componentSize: {
         sm: {
           height: tokens.controlHeightSm,
           lineHeight: '22px',
@@ -84,7 +85,7 @@ const controlAtom = atom(
       },
     },
     defaultVariants: {
-      size: 'md',
+      componentSize: 'md',
     },
   }
 );
@@ -116,15 +117,15 @@ export default meta;
 
 const Template = () => (
   <>
-    <TextInput size="sm" placeholder="Hello" />
-    <TextInput size="md" placeholder="Hello" />
-    <TextInput size="lg" placeholder="Hello" />
-    <Textarea size="sm" placeholder="Hello" />
-    <Textarea size="md" placeholder="Hello" />
-    <Textarea size="lg" placeholder="Hello" />
-    <Button size="sm">Hello</Button>
-    <Button size="md">Hello</Button>
-    <Button size="lg">Hello</Button>
+    <TextInput componentSize="sm" placeholder="Hello" />
+    <TextInput componentSize="md" placeholder="Hello" />
+    <TextInput componentSize="lg" placeholder="Hello" />
+    <Textarea componentSize="sm" placeholder="Hello" />
+    <Textarea componentSize="md" placeholder="Hello" />
+    <Textarea componentSize="lg" placeholder="Hello" />
+    <Button componentSize="sm">Hello</Button>
+    <Button componentSize="md">Hello</Button>
+    <Button componentSize="lg">Hello</Button>
   </>
 );
 

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { CSSObject } from '@emotion/css';
 import { css, cx, cache } from './emotion';
 import hash from '@emotion/hash';
@@ -20,9 +19,9 @@ type DefaultVariants = {
 };
 
 type AtomClassName = string;
-type Atom = (props?: Props) => AtomClassName;
-type Atoms = Array<Atom | AtomClassName>;
-type AtomOptions = {
+export type Atom = (props?: Props) => AtomClassName;
+export type Atoms = Array<Atom | AtomClassName>;
+export type AtomOptions = {
   variants?: Variants;
   defaultVariants?: DefaultVariants;
   composes?: Atoms;
@@ -93,8 +92,6 @@ const getProps = (props: Props = {}, defaultVariants: DefaultVariants = {}) => {
   return enhancedProps;
 };
 
-const baseStyles = css({ boxSizing: 'border-box' });
-
 export const atom = (
   styler: CSSObject = {},
   options: AtomOptions = {
@@ -164,24 +161,3 @@ export const atom = (
     return () => '';
   }
 };
-
-export const styled =
-  (Component: any = 'div') =>
-  (
-    styler: CSSObject = {},
-    options: AtomOptions = { variants: {}, composes: [], defaultVariants: {} }
-  ) => {
-    try {
-      const styleAtom = atom(styler, options);
-
-      const StyledComponent = React.forwardRef<any, any>((props: any, ref) => {
-        const { className, ...rest } = props;
-        const classes = cx(baseStyles, styleAtom(rest), className);
-        return <Component {...rest} className={classes} ref={ref} />;
-      });
-
-      return StyledComponent;
-    } catch (err) {
-      return (props: any) => <Component {...props} />;
-    }
-  };
