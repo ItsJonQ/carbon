@@ -1,4 +1,5 @@
-import { css } from './emotion';
+import * as React from 'react';
+import { css, cx } from './emotion';
 import hash from '@emotion/hash';
 
 type Props = {};
@@ -143,3 +144,24 @@ export const atom = (
     return () => '';
   }
 };
+
+export const styled =
+  (Component: any = 'div') =>
+  (
+    styler: React.CSSProperties = {},
+    options: AtomOptions = { variants: {}, composes: [], defaultVariants: {} }
+  ) => {
+    try {
+      const styleAtom = atom(styler, options);
+
+      const StyledComponent = React.forwardRef<any, any>((props: any, ref) => {
+        const { className, ...rest } = props;
+        const classes = cx(styleAtom(rest), className);
+        return <Component {...rest} className={classes} ref={ref} />;
+      });
+
+      return StyledComponent;
+    } catch (err) {
+      return (props: any) => <Component {...props} />;
+    }
+  };
