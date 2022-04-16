@@ -12,7 +12,7 @@ import createEmotion from '@emotion/css/create-instance';
 //   merge,
 //   sheet,
 // }
-const customEmotionInstance = createEmotion({ key: 'csix' });
+const customEmotionInstance = createEmotion({ key: 'atm' });
 
 /**
  * Compiling CSS with Carbon's custom Emotion instance.
