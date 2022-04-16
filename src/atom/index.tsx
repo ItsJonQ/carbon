@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { css, cx } from './emotion';
+import { CSSObject } from '@emotion/css';
+import { css, cx, cache } from './emotion';
 import hash from '@emotion/hash';
 
 type Props = {};
 type Variant = string | 'true';
 type Variants = {
   [key: string]: {
-    [key: Variant]: React.CSSProperties;
+    [key: Variant]: CSSObject;
   };
 };
 type CompiledVariants = {
@@ -25,6 +26,7 @@ type AtomOptions = {
   variants?: Variants;
   defaultVariants?: DefaultVariants;
   composes?: Atoms;
+  debug?: boolean;
 };
 
 const ATOM_ID = '__c6Id';
@@ -36,7 +38,7 @@ const ATOM_CACHE: { [key: string]: any } = {};
  * Generates a unique hash for atoms.
  */
 const createAtomHash = (
-  styler: React.CSSProperties = {},
+  styler: CSSObject = {},
   options: AtomOptions = {}
 ): string => {
   return hash(JSON.stringify({ styler, options })) || '';
@@ -45,10 +47,7 @@ const createAtomHash = (
 /**
  * Compiles the styles and registers it into the cache.
  */
-const compileAtom = (
-  styler: React.CSSProperties = {},
-  options: AtomOptions = {}
-) => {
+const compileAtom = (styler: CSSObject = {}, options: AtomOptions = {}) => {
   const { variants = {}, composes = [] } = options;
   const atomId = createAtomHash(styler, options);
   const compiledVariants: CompiledVariants = {};
@@ -62,7 +61,7 @@ const compileAtom = (
     }
   }
   /**
-   * It's valid to send in a React.CSSProperties style object to
+   * It's valid to send in a CSSObject style object to
    * Emotion's css() function.
    */
   // @ts-ignore
@@ -94,13 +93,18 @@ const getProps = (props: Props = {}, defaultVariants: DefaultVariants = {}) => {
   return enhancedProps;
 };
 
+const baseStyles = css({ boxSizing: 'border-box' });
+
 export const atom = (
-  styler: React.CSSProperties = {},
-  options: AtomOptions = { variants: {}, composes: [], defaultVariants: {} }
+  styler: CSSObject = {},
+  options: AtomOptions = {
+    variants: {},
+    composes: [],
+    defaultVariants: {},
+    debug: false,
+  }
 ) => {
   try {
-    const classes: Array<string> = [];
-
     const {
       className: atomClassName,
       variants = {},
@@ -108,10 +112,11 @@ export const atom = (
       atomId,
     } = compileAtom(styler, options);
 
-    classes.push(atomClassName);
-
     const styledAtom = (props?: Props): AtomClassName => {
+      const classes: Array<string> = [];
       const enhancedProps = getProps(props, options?.defaultVariants);
+
+      classes.push(atomClassName);
 
       for (const composedAtom of composes) {
         if (typeof composedAtom === 'string') {
@@ -128,10 +133,25 @@ export const atom = (
         if (key !== enhancedProps[variant]) continue;
         // @ts-ignore
         const variantClass = variants?.[variant]?.[key];
-        classes.push(variantClass);
+        if (variantClass) {
+          classes.push(variantClass);
+        }
       }
 
-      return css(...classes);
+      // @ts-ignore
+      const atomClasses = [...new Set(classes.flat())];
+
+      if (options.debug) {
+        const debugResults = atomClasses
+          .map((classId) =>
+            cache?.registered?.[classId].split(';').filter(Boolean).join(';')
+          )
+          .filter(Boolean);
+
+        console.log(debugResults);
+      }
+
+      return cx(atomClasses);
     };
     // @ts-ignore
     styledAtom[ATOM_NAMESPACE] = ATOM_VALUE;
@@ -148,7 +168,7 @@ export const atom = (
 export const styled =
   (Component: any = 'div') =>
   (
-    styler: React.CSSProperties = {},
+    styler: CSSObject = {},
     options: AtomOptions = { variants: {}, composes: [], defaultVariants: {} }
   ) => {
     try {
@@ -156,7 +176,7 @@ export const styled =
 
       const StyledComponent = React.forwardRef<any, any>((props: any, ref) => {
         const { className, ...rest } = props;
-        const classes = cx(styleAtom(rest), className);
+        const classes = cx(baseStyles, styleAtom(rest), className);
         return <Component {...rest} className={classes} ref={ref} />;
       });
 

@@ -70,6 +70,7 @@
   },
   "dependencies": {
     "@emotion/css": "11.9.0",
-    "@emotion/hash": "0.8.0"
+    "@emotion/hash": "0.8.0",
+    "classnames": "2.3.1"
   }
 }
