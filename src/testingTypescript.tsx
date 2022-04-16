@@ -26,6 +26,9 @@ type BoxOwnProps<E extends React.ElementType = React.ElementType> = {
 type BoxProps<E extends React.ElementType> = BoxOwnProps<E> &
   Omit<React.ComponentProps<E>, keyof BoxOwnProps>;
 
+// type PolymorphicComponentProps<E extends React.ElementType, P> = P & BoxProps<E>;
+// type PolymorphicComponent<P, D extends React.ElementType = "div"> = <E extends React.ElementType = D>(props: PolymorphicComponentProps<E, P>) => React.ReactElement | null;
+
 const styled =
   <El extends React.ElementType>(element: El) =>
   <Options extends AtomOptions>(styler: CSSObject = {}, options?: Options) => {
@@ -72,4 +75,4 @@ const opt = {
 };
 
 const Button = styled('button')({}, opt);
-const A = () => <Button size="md" flex />;
+const A = () => <Button size="md" flex outline />;
