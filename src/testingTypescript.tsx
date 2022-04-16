@@ -3,40 +3,33 @@ import { CSSObject } from '@emotion/css';
 
 const defaultElement = 'div';
 
-type Props = React.ComponentProps<typeof defaultElement>;
-
+type Variant = Record<string, CSSObject>;
 type AtomOptions = {
-  variants: {
-    [key: string]: {
-      [key: string]: CSSObject;
-    };
-  };
+  variants?: Record<string, Variant>;
 };
 
-type ExtractOptionsToProps<O extends AtomOptions> = {
-  [Key in keyof O['variants']]: keyof O['variants'][Key];
-};
+type ExtractOptionsToProps<O extends AtomOptions> = O['variants'] extends never
+  ? {}
+  : {
+      [Key in keyof O['variants']]?: keyof O['variants'][Key] extends 'true'
+        ? boolean
+        : keyof O['variants'][Key];
+    };
 
 type BoxOwnProps<E extends React.ElementType = React.ElementType> = {
+  /**
+   * Any React HTML element, such as a `div`, `button`, `input`, etc...
+   */
   as?: E;
 };
 
 type BoxProps<E extends React.ElementType> = BoxOwnProps<E> &
   Omit<React.ComponentProps<E>, keyof BoxOwnProps>;
 
-type AsComponent<
-  E extends React.ElementType,
-  P extends Record<string, unknown>
-> = P['as'] extends never
-  ? E extends never
-    ? typeof defaultElement
-    : E
-  : P['as'];
-
 const styled =
-  <El extends React.ElementType, Options extends AtomOptions>(element: El) =>
-  (styler: CSSObject, options: Options) => {
-    const Box: <E extends React.ElementType = typeof defaultElement>(
+  <El extends React.ElementType>(element: El) =>
+  <Options extends AtomOptions>(styler: CSSObject = {}, options?: Options) => {
+    const Box: <E extends El>(
       props: BoxProps<E> & ExtractOptionsToProps<Options>
     ) => React.ReactElement | null = React.forwardRef(function StyledComponent(
       props: BoxOwnProps,
@@ -62,23 +55,21 @@ const opt = {
         padding: 40,
       },
     },
+    /**
+     * Does a thing
+     */
     outline: {
       true: {
         outline: '1px solid red',
       },
     },
+    flex: {
+      true: {
+        display: 'flex',
+      },
+    },
   },
-} as const;
+};
 
-export const Box: <E extends React.ElementType = typeof defaultElement>(
-  props: BoxProps<E>
-) => React.ReactElement | null = React.forwardRef(function Box(
-  props: BoxOwnProps,
-  ref: React.Ref<Element>
-) {
-  const Element = props.as || defaultElement;
-  return <Element ref={ref} {...props} as={undefined} />;
-});
-
-const Button = styled('button')({}, { variants: { ...opt.variants } });
-const A = () => <Button as="div" />;
+const Button = styled('button')({}, opt);
+const A = () => <Button size="md" flex />;
